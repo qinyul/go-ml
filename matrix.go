@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math"
-	"math/rand"
 )
 
 type Matrix [][]float64
@@ -17,20 +16,9 @@ type mat struct {
 }
 
 func sigmoidf(x float64) float64 {
-	return float64(1) / (float64(1) + float64(math.Exp(-x)))
+	return float64(1) / (float64(1) + math.Exp(-x))
 }
 
-func matSum(dst *mat, a mat) {
-	if dst.rows == a.rows && dst.cols == a.cols {
-		for i := 0; i < dst.rows; i++ {
-			for j := 0; j < dst.cols; j++ {
-				dst.mat[i][j] = dst.mat[i][j] + a.mat[i][j]
-			}
-		}
-	} else {
-		panic("invalid matrix, dst and a is not equal")
-	}
-}
 func matDot(dst *mat, a mat, b mat) {
 	if a.cols != b.rows {
 		panic("a.cols and b.rows not equal")
@@ -55,38 +43,14 @@ func matDot(dst *mat, a mat, b mat) {
 	}
 }
 
-func (m *mat) generateColumn() {
-
-	for i := 0; i < m.rows; i++ {
-		var newCols []float64
-		for j := 0; j < m.cols; j++ {
-			newCols = append(newCols, float64(1))
-		}
-		m.mat = append(m.mat, newCols)
-	}
-}
-
-func (m *mat) matRand(low float64, high float64) {
-	for i := 0; i < len(m.mat); i++ {
-		for j := 0; j < len(m.mat[i]); j++ {
-			m.mat[i][j] = rand.Float64()*(high-low) + low
-		}
-	}
-}
-
-func (m *mat) matFil(x float64) {
-	for i := 0; i < len(m.mat); i++ {
-		for j := 0; j < len(m.mat[i]); j++ {
-			m.mat[i][j] = x
-		}
-	}
-}
-
 func (m *mat) matCopy(src mat) {
 	if m.rows != src.rows {
 		panic("matCopy:: rows not equal")
 	}
+
 	if m.cols != src.cols {
+		src.matPrint(0)
+		fmt.Printf("m.cols = %d, src.cols = %d\n", m.cols, src.cols)
 		panic("matCopy:: cols not equal")
 	}
 
@@ -94,6 +58,18 @@ func (m *mat) matCopy(src mat) {
 		for j := 0; j < m.cols; j++ {
 			m.mat[i][j] = src.mat[i][j]
 		}
+	}
+}
+
+func matSum(dst *mat, a mat) {
+	if dst.rows == a.rows && dst.cols == a.cols {
+		for i := 0; i < dst.rows; i++ {
+			for j := 0; j < dst.cols; j++ {
+				dst.mat[i][j] += a.mat[i][j]
+			}
+		}
+	} else {
+		panic("invalid matrix, dst and a is not equal")
 	}
 }
 
@@ -105,20 +81,14 @@ func (m *mat) matSig() {
 	}
 }
 
-func (m *mat) matPrint() {
-	fmt.Printf("%s = [\n", m.name)
+func (m *mat) matPrint(padding int) {
+	fmt.Printf("%*s%s = [\n", padding, "", m.name)
 	for i := 0; i < len(m.mat); i++ {
 		for j := 0; j < len(m.mat[i]); j++ {
-			fmt.Printf("    %f ", m.mat[i][j])
+			fmt.Printf("%*s    ", padding, "")
+			fmt.Printf("%f ", m.mat[i][j])
 		}
 		fmt.Printf("\n")
 	}
-	fmt.Printf("]\n")
-}
-
-func getMatrixValue(mat Matrix) float64 {
-	lastRow := len(mat) - 1
-	lastColumn := len(mat[lastRow]) - 1
-	lastValue := mat[lastRow][lastColumn]
-	return lastValue
+	fmt.Printf("%*s]\n", padding, "")
 }

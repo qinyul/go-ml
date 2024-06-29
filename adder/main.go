@@ -5,6 +5,7 @@ import (
 
 	mlMat "github.com/ml/matrix"
 	neuralNetwork "github.com/ml/neuralnetwork"
+	"github.com/ml/visualization"
 )
 
 const (
@@ -58,25 +59,42 @@ func main() {
 		BS:   []neuralNetwork.ArcDetail{},
 		AS:   []neuralNetwork.ArcDetail{},
 	}
+
 	nn := neuralNetwork.NNAlloc(&arch, len(arch.Spec), true)
 	g := neuralNetwork.NNAlloc(&arch, len(arch.Spec), true)
 	neuralNetwork.NNPrint(nn, "nn")
+
 	fmt.Printf("c = %f\n", neuralNetwork.NNCost(nn, ti, to))
 
 	rate := float64(1)
 
-	// i = learning attempt
-	for i := 0; i < 10*1; i++ {
-		// to swith between back propagation and finite different method
-		if true {
-			neuralNetwork.NNBackprop(nn, g, ti, to)
-		} else {
-			neuralNetwork.NNFiniteDiff(nn, g, 1e-1, ti, to)
-		}
-
-		neuralNetwork.NNLearn(nn, g, rate)
-		fmt.Printf("%d: c = %f\n", i, neuralNetwork.NNCost(nn, ti, to))
+	vs := visualization.Visualization{
+		NN:   &nn,
+		Arch: arch,
+		G:    &g,
+		TI:   ti,
+		TO:   to,
 	}
+
+	// switch to use visualization
+	if true {
+		vs.InitVisualization()
+
+	} else {
+		for i := 0; i < 13*1000; i++ {
+			// to swith between back propagation and finite different method
+			if true {
+				neuralNetwork.NNBackprop(nn, g, ti, to)
+			} else {
+				neuralNetwork.NNFiniteDiff(nn, g, 1e-1, ti, to)
+			}
+
+			neuralNetwork.NNLearn(nn, g, rate)
+			fmt.Printf("%d: c = %f\n", i, neuralNetwork.NNCost(nn, ti, to))
+		}
+	}
+
+	// i = learning attempt
 
 	fails := 0
 	for x := 0; x < n; x++ {

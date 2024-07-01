@@ -1,21 +1,24 @@
 package matrix
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
 	"math"
+	"os"
 )
 
 type Matrix [][]float64
 
 type Mat struct {
-	Rows   int
-	Cols   int
-	Name   string
-	Stride int
-	Mat    Matrix
+	Rows   int    `json:"rows"`
+	Cols   int    `json:"cols"`
+	Name   string `json:"name"`
+	Stride int    `json:"stride"`
+	Mat    Matrix `json:"mat"`
 }
 
-func sigmoidf(x float64) float64 {
+func Sigmoidf(x float64) float64 {
 	return float64(1) / (float64(1) + math.Exp(-x))
 }
 
@@ -85,7 +88,7 @@ func MatSum(dst *Mat, a Mat) {
 func (m *Mat) MatSig() {
 	for i := 0; i < m.Rows; i++ {
 		for j := 0; j < m.Cols; j++ {
-			m.Mat[i][j] = sigmoidf(m.Mat[i][j])
+			m.Mat[i][j] = Sigmoidf(m.Mat[i][j])
 		}
 	}
 }
@@ -100,4 +103,35 @@ func (m *Mat) MatPrint(padding int) {
 		fmt.Printf("\n")
 	}
 	fmt.Printf("%*s]\n", padding, "")
+}
+
+func LoadMatJSON(filePath string) Mat {
+	file, err := os.Open(filePath)
+	if err != nil {
+		fmt.Println("Error opening mat json file:", err)
+		panic("Error opening mat json file")
+	}
+
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	var jsonData []byte
+	for scanner.Scan() {
+		jsonData = append(jsonData, scanner.Bytes()...)
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println("Error scanning file:", err)
+		panic("error scanning file")
+	}
+
+	var mat Mat
+
+	if err := json.Unmarshal(jsonData, &mat); err != nil {
+		fmt.Println("Error unmarshalling JSON:", err)
+		panic("error unmarshalling json")
+	}
+
+	return mat
 }
